@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Timer</title>
+<style>
+:root{--bg:#f6f6f4;--fg:#1c1c1a;--muted:#6b6b66;--accent:#2563eb;--accent-fg:#fff;--stop:#dc2626;--card:#e9e9e5;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141413;--fg:#f2f2ee;--muted:#9a9a93;--card:#262624;--accent:#3b82f6}}
+:root[data-theme="dark"]{--bg:#141413;--fg:#f2f2ee;--muted:#9a9a93;--card:#262624;--accent:#3b82f6}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:48px;padding:24px;box-sizing:border-box}
+#time{font-size:clamp(48px,18vw,96px);font-weight:200;font-variant-numeric:tabular-nums;letter-spacing:-1px}
+#time small{font-size:.5em;color:var(--muted)}
+.row{display:flex;gap:16px;width:100%;max-width:360px}
+button{flex:1;padding:20px 0;font-size:20px;font-weight:600;border:0;border-radius:16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:active{transform:scale(.97)}
+#toggle{background:var(--accent);color:var(--accent-fg)}
+#toggle.running{background:var(--stop)}
+#reset{background:var(--card);color:var(--fg)}
+</style>
+</head>
+<body>
+<div id="time">00:00<small>.00</small></div>
+<div class="row">
+<button id="reset">Reset</button>
+<button id="toggle">Start</button>
+</div>
+<script>
+var elapsed=0,startedAt=0,raf=null,running=false;
+var timeEl=document.getElementById('time'),toggle=document.getElementById('toggle');
+function pad(n){return n<10?'0'+n:''+n}
+function render(){
+  var ms=elapsed+(running?performance.now()-startedAt:0);
+  var cs=Math.floor(ms/10)%100,s=Math.floor(ms/1000)%60,m=Math.floor(ms/60000);
+  var h=Math.floor(m/60);m=m%60;
+  timeEl.innerHTML=(h?h+':'+pad(m):pad(m))+':'+pad(s)+'<small>.'+pad(cs)+'</small>';
+  if(running)raf=requestAnimationFrame(render);
+}
+toggle.onclick=function(){
+  if(running){elapsed+=performance.now()-startedAt;running=false;cancelAnimationFrame(raf);toggle.textContent='Start';toggle.classList.remove('running');render();}
+  else{startedAt=performance.now();running=true;toggle.textContent='Stop';toggle.classList.add('running');render();}
+};
+document.getElementById('reset').onclick=function(){
+  running=false;cancelAnimationFrame(raf);elapsed=0;toggle.textContent='Start';toggle.classList.remove('running');render();
+};
+</script>
+</body>
+</html>
